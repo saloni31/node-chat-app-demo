@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Socket.IO and Backend API Example</title>
+</head>
+<body>
+  <h1>Socket.IO and Backend API Example</h1>
+  <div id="messages"></div>
+  <button id="sendButton">Send Message to Server</button>
+  <button id="callAPIButton">API Call</button>
+  <button id = "joinRoom">Join ROom</button>
+
+  <button id="sendMessage">Send Messaage</button>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+
+  <script>
+    // Connect to the Socket.IO server
+    const socket = io("http://localhost:5000"); // Replace with your Socket.IO server's URL
+
+    // Function to add a new message to the DOM
+    function addMessage(message) {
+      const messagesContainer = document.getElementById('messages');
+      const messageElement = document.createElement('div');
+      messageElement.textContent = message;
+      messagesContainer.appendChild(messageElement);
+    }
+    let blogPostId = '64ba96d11a98c734c8922ddb'
+
+    
+
+let blogRoomName = 'room_64ba96d11a98c734c8922ddb'
+    socket.on("sendBlogRoomName", (roomName) => {
+        console.log(roomName);
+        blogRoomName = roomName
+    })
+    socket.on(blogRoomName, (message) => {
+        console.log("Message: " , message);
+    })
+
+    // Send a message to the server when the button is clicked
+    const sendButton = document.getElementById('sendButton');
+    sendButton.addEventListener('click', () => {
+      const message = 'Hello, Server!'; // Change this message as needed
+      socket.emit('message', { message });
+    });
+
+   
+    const callAPIButton = document.getElementById('callAPIButton');
+  callAPIButton.addEventListener('click', async () => {
+    try {
+      // Make a request to the backend API
+      const response = await fetch('http://localhost:5000/api/v1/blogPosts', {
+        method: 'POST', // Specify the HTTP method (POST)
+        headers: {
+          'Content-Type': 'application/json', // Set the request content type
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0YjI5YTlmNGZkZjczMGY0OGNlMDk0MyIsImlhdCI6MTY4OTkyMjk0MCwiZXhwIjoxNjkxMjE4OTQwfQ.EFuOexGGGhv_IwX_lKCttuKg3u9s-CKEQ7by7Jj_lzg'
+        },
+        body: JSON.stringify({
+  "mentorId": "64b29a9f4fdf730f48ce0943",
+  "blogId": "649410c7ba94a95d50b2bcb8",
+  "title": "Test with the socket"
+}) // Replace with your data object to be sent to the backend
+      });
+
+      const data = await response.json();
+      console.log(data)
+     
+     socket.emit("JoinBlogThread", ({blogPostId:data.data._id , userId: Math.floor(Math.random()*90000) + 10000,message: 'Test' }))
+    //   console.log('Backend API response:', data);
+    //   addMessage('Response from Backend API: ' + JSON.stringify(data));
+    } catch (error) {
+      console.error('Error calling Backend API:', error);
+    }
+  });
+
+  const joinRoom = document.getElementById('joinRoom');
+  joinRoom.addEventListener('click', async () => {
+    socket.emit("joinBlogRoom", ({blogPostId , userId:Math.floor(Math.random()*90000) + 10000,message: 'Join Room' }))
+  })
+const sendMessage =  document.getElementById('sendMessage');
+sendMessage.addEventListener('click', async () => {
+    let test = "T1 message"
+    try {
+      // Make a request to the backend API
+      const response = await fetch('http://localhost:5000/api/v1/blogPosts/createReply/'+blogPostId, {
+        method: 'POST', // Specify the HTTP method (POST)
+        headers: {
+          'Content-Type': 'application/json', // Set the request content type
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0YjI5YTlmNGZkZjczMGY0OGNlMDk0MyIsImlhdCI6MTY4OTkyMjk0MCwiZXhwIjoxNjkxMjE4OTQwfQ.EFuOexGGGhv_IwX_lKCttuKg3u9s-CKEQ7by7Jj_lzg'
+        },
+        body: JSON.stringify({
+            userId: Math.floor(Math.random()*90000) + 10000,
+          reply: test
+}) // Replace with your data object to be sent to the backend
+      });
+
+      const data = await response.json();
+     
+    
+    //   console.log('Backend API response:', data);
+    //   addMessage('Response from Backend API: ' + JSON.stringify(data));
+    } catch (error) {
+      console.error('Error calling Backend API:', error);
+    }
+})
+  </script>
+</body>
+</html>
